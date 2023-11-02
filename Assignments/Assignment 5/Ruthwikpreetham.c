@@ -51,6 +51,8 @@ boolean Aggregate(boolean mydone) {
 
 
 main( ){
+
+    cout.precision(3);
     /*Read in initial values for array A*/
     for(i = 1; i <= n;i++){
         for(j = 1; j <= n; j++ ){
@@ -76,6 +78,19 @@ main( ){
             done = Aggregate(maxchange < tolerance);
         }
         while (!done);
+    }
+
+    cout << "Ruthwik Preetham"<< endl ;
+
+    for(i = 0; i <= n + 1; i++){
+            cout << "Row:  " << i << "   Result" <<endl;
+            for(j = 0; j <= n+1; j++){
+            if((j > 0) && (j % 10) == 0){
+                cout << endl;
+            }
+            cout << A[i][j] << "  ";
+            }
+        cout << endl;
     }
 
     
