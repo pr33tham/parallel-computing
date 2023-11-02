@@ -1,0 +1,817 @@
+Microsoft Windows [Version 10.0.22621.2283]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\ruthw>cd C:\ZD\PaceUniv\parallel computing\parallel
+
+C:\ZD\PaceUniv\parallel computing\parallel>cstar
+
+                          C* COMPILER AND
+                 PARALLEL COMPUTER SIMULATION SYSTEM
+                             (VER. 2.2)
+
+     (C) Copyright 2007 by Bruce P. Lester, All Rights Reserved
+
+
+  Basic Commands:
+    *OPEN filename - Open and Compile your program source file
+    *RUN - Initialize and run your program from the beginning
+    *CLOSE - Close your program source file to allow editing
+    *EXIT - Terminate this C* System
+    *HELP - Show a complete list of commands
+
+
+*open rpreetham_Back_Substitution.c
+
+
+Program Successfully Compiled
+
+To View a Complete Program Listing, See File LISTFILE.TXT
+
+*v
+   1 /* PROGRAM BackSubstitution */
+   2 #include <stdlib.h>
+   3 #include <math.h>
+   4 #define n 4
+   5 float A[n+1][n+1];
+   6
+   7 float B[n+1] = {0, 5, 2, 1, 7 };
+   8 float x[n+1];
+   9 float stream pipechan[n+2];
+  10 int i, j;
+  11 void PipeProcess(int i) {
+  12     /*Solves Equation i to compute x[i]*/
+  13     int j;
+  14     float sum, xvalue;
+  15     sum = 0;
+  16     for (j = 1; j <= i-1; j++) {
+  17         recv(pipechan[i],xvalue); /*Read x[j] from left*/
+  18         send(pipechan[i+1],xvalue); /*Send x[j] to right*/
+  19         sum = sum + A[i][j]*xvalue;
+  20     }
+  21     x[i] = (B[i]-sum) / A[i][i]; /*Compute x[i]*/
+  22     send(pipechan[i+1],x[i]); /*Send x[i] to right*/
+  23 }
+  24 main( ) {
+  25     cout.precision(2);
+  26     /* cout << (rand() % 10000)/100.0; */
+  27     /*Initialize arrays A and B */
+  28     for(i = 1; i <= n;i++){
+  29         for(j = 1; j <= n; j++ ){
+  30             A[i][j] = (rand() % 10000)/100.0;
+  31         }
+  32     }
+  33     forall i = 1 to n do /*Create pipeline processes */
+  34         PipeProcess(i);
+  35
+  36     for(i = 1; i <= n; i++){
+  37         cout << x[i] << " ";
+  38     }
+  39
+  40 }
+  41 /*
+  42 float B[n+1] = {0, 5, 2, 1, 7, 2, 3, 6, 7, 1,
+  43                 2, 3, 6, 1, 3, 7, 2, 7, 6, 0}; */
+
+*run
+ 0.06 -0.05 -0.10   1.0
+
+SEQUENTIAL EXECUTION TIME: 1231
+PARALLEL EXECUTION TIME: 975
+SPEEDUP:    1.26
+NUMBER OF PROCESSORS USED: 5
+
+* break 22
+
+
+*status
+   PROCESS #   FUNCTION       LINE NUMBER  STATUS   PROCESSOR
+
+*run
+
+Break At 22  In Function PIPEPROCESS
+Process Number  1
+
+
+
+*status
+   PROCESS #   FUNCTION       LINE NUMBER  STATUS   PROCESSOR
+       0        MAIN               35      BLOCKED      0
+       1        PIPEPROCESS        22      RUNNING      1
+       2        PIPEPROCESS        17      RUNNING      2
+       3        PIPEPROCESS        16      RUNNING      3
+       4        MAIN               34      READY        4
+
+*write 4 x
+
+
+Index Range:
+    0--> 0
+    1-->  3.174603174603174E-001
+    2--> 0
+    3--> 0
+    4--> 0
+
+*continue
+
+Break At 22  In Function PIPEPROCESS
+Process Number  2
+
+
+
+*status
+   PROCESS #   FUNCTION       LINE NUMBER  STATUS   PROCESSOR
+       0        MAIN               35      BLOCKED      0
+       2        PIPEPROCESS        22      RUNNING      2
+       3        PIPEPROCESS        16      RUNNING      3
+       4        PIPEPROCESS        19      RUNNING      4
+
+*write 4 x
+
+
+Index Range:
+    0--> 0
+    1-->  3.174603174603174E-001
+    2--> -2.550342982955295E-001
+    3--> 0
+    4--> 0
+
+*continue
+
+Break At 22  In Function PIPEPROCESS
+Process Number  3
+
+
+
+*status
+   PROCESS #   FUNCTION       LINE NUMBER  STATUS   PROCESSOR
+       0        MAIN               35      BLOCKED      0
+       3        PIPEPROCESS        22      RUNNING      3
+       4        PIPEPROCESS        16      RUNNING      4
+
+*write 0 x
+
+
+Index Range:
+    0--> 0
+    1-->  3.174603174603174E-001
+    2--> -2.550342982955295E-001
+    3--> -5.799618451702377E+000
+    4--> 0
+
+*continue
+
+Break At 22  In Function PIPEPROCESS
+Process Number  4
+
+
+
+*write 0 x
+
+
+Index Range:
+    0--> 0
+    1-->  3.174603174603174E-001
+    2--> -2.550342982955295E-001
+    3--> -5.799618451702377E+000
+    4-->  1.356705100010526E+001
+
+*continue
+ 0.32 -0.26 -5.80    14
+
+SEQUENTIAL EXECUTION TIME: 1231
+PARALLEL EXECUTION TIME: 975
+SPEEDUP:    1.26
+NUMBER OF PROCESSORS USED: 5
+
+*close
+
+You can now modify your Program Source File
+
+
+*open rpreetham_Back_Substitution.c
+
+
+Program Successfully Compiled
+
+To View a Complete Program Listing, See File LISTFILE.TXT
+
+*view
+   1 /* PROGRAM BackSubstitution */
+   2 #include <stdlib.h>
+   3 #include <math.h>
+   4 #define n 10
+   5 float A[n+1][n+1];
+   6
+   7 float B[n+1] = {0, 5, 2, 1, 7, 2, 3, 6, 7, 1};
+   8 float x[n+1];
+   9 float stream pipechan[n+2];
+  10 int i, j;
+  11 void PipeProcess(int i) {
+  12     /*Solves Equation i to compute x[i]*/
+  13     int j;
+  14     float sum, xvalue;
+  15     sum = 0;
+  16     for (j = 1; j <= i-1; j++) {
+  17         recv(pipechan[i],xvalue); /*Read x[j] from left*/
+  18         send(pipechan[i+1],xvalue); /*Send x[j] to right*/
+  19         sum = sum + A[i][j]*xvalue;
+  20     }
+  21     x[i] = (B[i]-sum) / A[i][i]; /*Compute x[i]*/
+  22     send(pipechan[i+1],x[i]); /*Send x[i] to right*/
+  23 }
+  24 main( ) {
+  25     cout.precision(2);
+  26     /* cout << (rand() % 10000)/100.0; */
+  27     /*Initialize arrays A and B */
+  28     for(i = 1; i <= n;i++){
+  29         for(j = 1; j <= n; j++ ){
+  30             A[i][j] = (rand() % 10000)/100.0;
+  31         }
+  32     }
+  33     forall i = 1 to n do /*Create pipeline processes */
+  34         PipeProcess(i);
+  35
+  36     for(i = 1; i <= n; i++){
+  37         cout << x[i] << " ";
+  38     }
+  39
+  40 }
+  41 /*
+  42 float B[n+1] = {0, 5, 2, 1, 7, 2, 3, 6, 7, 1,
+  43                 2, 3, 6, 1, 3, 7, 2, 7, 6, 0}; */
+
+*break 33
+
+
+*break 36
+
+
+*run
+
+Break At 33  In Function MAIN
+Process Number  0
+
+
+
+*time
+Since Start of Program:
+     Elapsed Time:  2840
+     Number of Processors Used:  1
+     Speedup:    1.00
+
+
+*continue
+
+Break At 36  In Function MAIN
+Process Number  0
+
+
+
+*time
+Since Start of Program:
+     Elapsed Time:  3720
+     Number of Processors Used:  10
+     Speedup:    1.62
+
+Since Last Breakpoint:
+     Elapsed Time:  880
+     Speedup:    3.63
+
+*continue
+ 0.76 -0.72   2.1 -1.52   9.7 -9.22    43 -396.67 -35.08  1.4E+002
+
+SEQUENTIAL EXECUTION TIME: 6252
+PARALLEL EXECUTION TIME: 3933
+SPEEDUP:    1.59
+NUMBER OF PROCESSORS USED: 10
+
+*close
+
+You can now modify your Program Source File
+
+
+*open rpreetham_Back_Substitution.c
+
+    8                 2, 3, 6, 1, 3, 7, 2, 7, 6, 0};
+ ****                                               ^139
+
+
+ COMPILATION ERRORS
+
+ ERROR CODES
+139  Too Many Values
+
+PROGRAM SOURCE FILE IS NOW CLOSED TO ALLOW EDITING
+
+To View a Complete Program Listing, See File LISTFILE.TXT
+
+*open rpreetham_Back_Substitution.c
+
+
+Program Successfully Compiled
+
+To View a Complete Program Listing, See File LISTFILE.TXT
+
+*close
+
+You can now modify your Program Source File
+
+
+*open rpreetham_Back_Substitution.c
+
+
+Program Successfully Compiled
+
+To View a Complete Program Listing, See File LISTFILE.TXT
+
+*profile 0:20 1000
+
+
+*run
+TIME: 0
+0 1 2 3 4 5         10        15        20
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+* . . . . . . . . . .
+. - + . . - - - - + + + + + + + + + +
+
+
+SEQUENTIAL EXECUTION TIME: 22834
+PARALLEL EXECUTION TIME: 12605
+SPEEDUP:    1.81
+NUMBER OF PROCESSORS USED: 19
+
+*profile 0:20 400
+
+
+*run
+TIME: 0
+0 1 2 3 4 5         10        15        20
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+TIME: 8000
+0 1 2 3 4 5         10        15        20
+*
+*
+*
+*
+*
+*
+*
+* + - - + + - - - - - . . . . . . . .
+. + * . . . - * * * * * * * * * + + +
+. . * . . . . . . - - + * * * * * * *
+. . - . . . . . . . . . . . + * * * *
+
+
+SEQUENTIAL EXECUTION TIME: 22834
+PARALLEL EXECUTION TIME: 12605
+SPEEDUP:    1.81
+NUMBER OF PROCESSORS USED: 19
+
+*d
+Listing File for your Source Program: LISTFILE.TXT
+
+*close
+
+You can now modify your Program Source File
+
+
+*open rpreetham_Back_Substitution.c
+
+
+Program Successfully Compiled
+
+To View a Complete Program Listing, See File LISTFILE.TXT
+
+*profile 0:20 400
+
+
+*run
+TIME: 0
+0 1 2 3 4 5         10        15        20
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+TIME: 8000
+0 1 2 3 4 5         10        15        20
+*
+*
+*
+*
+*
+*
+*
+* + - - + + - - - - - . . . . . . . .
+. + * . . . - * * * * * * * * * + + +
+. . * . . . . . . - - + * * * * * * *
+. . - . . . . . . . . . . . + * * * *
+
+
+SEQUENTIAL EXECUTION TIME: 22834
+PARALLEL EXECUTION TIME: 12605
+SPEEDUP:    1.81
+NUMBER OF PROCESSORS USED: 19
+
+*profile 0:20 40
+
+
+*run
+TIME: 0
+0 1 2 3 4 5         10        15        20
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+TIME: 800
+0 1 2 3 4 5         10        15        20
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+TIME: 1600
+0 1 2 3 4 5         10        15        20
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+TIME: 2400
+0 1 2 3 4 5         10        15        20
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+TIME: 3200
+0 1 2 3 4 5         10        15        20
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+TIME: 4000
+0 1 2 3 4 5         10        15        20
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+TIME: 4800
+0 1 2 3 4 5         10        15        20
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+TIME: 5600
+0 1 2 3 4 5         10        15        20
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+TIME: 6400
+0 1 2 3 4 5         10        15        20
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+TIME: 7200
+0 1 2 3 4 5         10        15        20
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+TIME: 8000
+0 1 2 3 4 5         10        15        20
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+TIME: 8800
+0 1 2 3 4 5         10        15        20
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+TIME: 9600
+0 1 2 3 4 5         10        15        20
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+TIME: 10400
+0 1 2 3 4 5         10        15        20
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+* .
+* * + + - .
+* * + - - + + .
+* - * * + . . + + - .
+* . + * + * + . . . + + + -
+* * + * * + + + . . . . . - + - .
++ + . * + * * + * + . . . . . - + + -
+. * . . * * + * + + * + . . . . . . .
+. * . . * + * + * * + + * + . . . . .
+TIME: 11200
+0 1 2 3 4 5         10        15        20
+. + * . . * + * * + * * + + + . . . .
+. * + . . * * + + * * + * * + * + . .
+. + * . . - * * * + + * * + * + + * +
+. * * . . . * * + * * + + * + * * + +
+. + + . . . + + * * + * * + * * + * *
+. * * . . . . * + + * * + * + + * * +
+. + + . . . . * + * + + * * * * + + *
+. . * . . . . * * + + * + + * + * * +
+. . + . . . . * + * * + + * + * * + *
+. . + . . . . . * * + * * + * + + * *
+. . * . . . . . * + * * + * + + * + +
+. . + . . . . . . * + + * * * * + + *
+. . * . . . . . . * * * + + * + * * +
+. . + . . . . . . - * + * * + * * + *
+. . * . . . . . . . * * * + * + + * *
+. . * . . . . . . . + + + * + * * + +
+. . + . . . . . . . . * * + * * + * *
+. . * . . . . . . . . + * + + + * * +
+. . + . . . . . . . . . * * + * + + *
+. . * . . . . . . . . . * + * + + * +
+TIME: 12000
+0 1 2 3 4 5         10        15        20
+. . * . . . . . . . . . . * + * * + +
+. . + . . . . . . . . . . * * * + * *
+. . * . . . . . . . . . . . + + * * +
+. . * . . . . . . . . . . . * * + + *
+. . - . . . . . . . . . . . * + * * +
+. . . . . . . . . . . . . . * * * + *
+. . . . . . . . . . . . . . + + + * *
+. . . . . . . . . . . . . . . * * + +
+. . . . . . . . . . . . . . . + * + *
+. . . . . . . . . . . . . . . . * * +
+. . . . . . . . . . . . . . . . * + *
+. . . . . . . . . . . . . . . . . * *
+. . . . . . . . . . . . . . . . . * +
+. . . . . . . . . . . . . . . . . . *
+. . . . . . . . . . . . . . . . . . *
+
+
+SEQUENTIAL EXECUTION TIME: 22834
+PARALLEL EXECUTION TIME: 12605
+SPEEDUP:    1.81
+NUMBER OF PROCESSORS USED: 19
+
+*

@@ -1,0 +1,556 @@
+Last login: Wed Sep 20 14:27:45 on ttys001
+(base) jusaksikharam@Jusaks-MacBook-Pro parallel % ./cstar
+
+                          C* COMPILER AND
+                 PARALLEL COMPUTER SIMULATION SYSTEM 
+                             (VER. 2.1)
+
+     (C) Copyright 2006 by Bruce P. Lester, All Rights Reserved
+
+
+  Basic Commands:
+    *OPEN filename - Open and Compile your program source file
+    *RUN - Initialize and run your program from the beginning
+    *CLOSE - Close your program source file to allow editing
+    *EXIT - Terminate this C* System
+    *HELP - Show a complete list of commands
+
+
+*open RankSortParallel.c
+
+
+Program Successfully Compiled
+
+To View a Complete Program Listing, See File LISTFILE.TXT
+
+*run
+  82   25   33   63   50   11   53   61   81   31 
+
+  11   25   31   33   50   53   61   63   81   82 
+
+
+
+SEQUENTIAL EXECUTION TIME: 5600
+PARALLEL EXECUTION TIME: 1437
+SPEEDUP:    3.90
+NUMBER OF PROCESSORS USED: 11
+
+*close
+
+You can now modify your Program Source File
+
+
+*input = InputsForRankSortParallel.txt
+
+*open RankSortParallel.c
+
+   25     // values[i] = rand() % 100;  /* initialize values */ 
+ ****      ^14
+
+
+ COMPILATION ERRORS
+
+ ERROR CODES
+14   ;                        
+
+PROGRAM SOURCE FILE IS NOW CLOSED TO ALLOW EDITING
+
+To View a Complete Program Listing, See File LISTFILE.TXT
+
+*open RankSortParallel.c
+
+
+Program Successfully Compiled
+
+To View a Complete Program Listing, See File LISTFILE.TXT
+
+*run
+  82   25   33   63   50   11   53   61   81   31 
+
+  11   25   31   33   50   53   61   63   81   82 
+
+
+
+SEQUENTIAL EXECUTION TIME: 5550
+PARALLEL EXECUTION TIME: 1387
+SPEEDUP:    4.00
+NUMBER OF PROCESSORS USED: 11
+
+*close
+
+You can now modify your Program Source File
+
+
+*open RankSortParallel.c
+
+   26      cin >> input[i];   /* if to initialize with input values */ 
+ ****                  ^ 0
+
+
+ COMPILATION ERRORS
+
+ ERROR CODES
+0    Undefined Identifier     
+
+PROGRAM SOURCE FILE IS NOW CLOSED TO ALLOW EDITING
+
+To View a Complete Program Listing, See File LISTFILE.TXT
+
+*close
+No Program Source File is open
+
+
+*input = InputsForRankSortParallel.txt
+
+*open RankSortParallel.c
+
+
+Program Successfully Compiled
+
+To View a Complete Program Listing, See File LISTFILE.TXT
+
+*run
+  12   31    6   55   10  100   99   12   81   31 
+
+   6   10   12   12   31   31   55   81   99  100 
+
+
+
+SEQUENTIAL EXECUTION TIME: 5550
+PARALLEL EXECUTION TIME: 1378
+SPEEDUP:    4.03
+NUMBER OF PROCESSORS USED: 11
+
+*close 
+
+You can now modify your Program Source File
+
+
+*open RankSortParallel.c
+
+
+Program Successfully Compiled
+
+To View a Complete Program Listing, See File LISTFILE.TXT
+
+*run
+  12   31    6   55   10  100   99   12   81   31 
+
+   6   10   12   12   31   31   55   81   99  100 
+
+
+
+SEQUENTIAL EXECUTION TIME: 5550
+PARALLEL EXECUTION TIME: 1378
+SPEEDUP:    4.03
+NUMBER OF PROCESSORS USED: 11
+
+*output = RankSortParallelOutput.txt
+
+*run
+
+
+
+*break 33
+
+
+*run
+
+Break At 33  In Function MAIN          
+Process Number  0
+
+
+
+*close
+
+You can now modify your Program Source File
+
+
+*open RankSortParallel.c
+
+
+Program Successfully Compiled
+
+To View a Complete Program Listing, See File LISTFILE.TXT
+
+*break 33
+
+
+*run
+
+Break At 33  In Function MAIN          
+Process Number  0
+
+
+
+*status
+   PROCESS #   FUNCTION       LINE NUMBER  STATUS   PROCESSOR
+       0        MAIN               33      RUNNING      0
+
+*continue
+
+Break At 33  In Function MAIN          
+Process Number  0
+
+
+
+*status
+   PROCESS #   FUNCTION       LINE NUMBER  STATUS   PROCESSOR
+       0        MAIN               33      RUNNING      0
+       1        MAIN               33      READY        1
+
+*continue
+
+Break At 33  In Function MAIN          
+Process Number  0
+
+
+
+*status
+   PROCESS #   FUNCTION       LINE NUMBER  STATUS   PROCESSOR
+       0        MAIN               33      RUNNING      0
+       1        PUTINPLACE         13      RUNNING      1
+       2        MAIN               33      READY        2
+
+*continue
+
+Break At 33  In Function MAIN          
+Process Number  0
+
+
+
+*status
+   PROCESS #   FUNCTION       LINE NUMBER  STATUS   PROCESSOR
+       0        MAIN               33      RUNNING      0
+       1        PUTINPLACE         15      RUNNING      1
+       2        PUTINPLACE         13      RUNNING      2
+       3        MAIN               33      READY        3
+
+*continue
+
+Break At 33  In Function MAIN          
+Process Number  0
+
+
+
+*status
+   PROCESS #   FUNCTION       LINE NUMBER  STATUS   PROCESSOR
+       0        MAIN               33      RUNNING      0
+       1        PUTINPLACE         17      RUNNING      1
+       2        PUTINPLACE         15      RUNNING      2
+       3        PUTINPLACE         12      RUNNING      3
+       4        MAIN               33      READY        4
+
+*continue 6
+INVALID COMMAND
+
+*break
+At Line:  20
+
+
+*run
+
+Break At 33  In Function MAIN          
+Process Number  0
+
+
+
+*status
+   PROCESS #   FUNCTION       LINE NUMBER  STATUS   PROCESSOR
+       0        MAIN               33      RUNNING      0
+
+*step process 2
+Invalid Process Number
+
+*close
+
+You can now modify your Program Source File
+
+
+*open RankSortParallel.c
+
+
+Program Successfully Compiled
+
+To View a Complete Program Listing, See File LISTFILE.TXT
+
+*break
+At Line:  20
+
+
+*run
+
+Break At 20  In Function PUTINPLACE    
+Process Number  1
+
+
+
+*status
+   PROCESS #   FUNCTION       LINE NUMBER  STATUS   PROCESSOR
+       0        MAIN               33      BLOCKED      0
+       1        PUTINPLACE         20      RUNNING      1
+       2        PUTINPLACE         15      RUNNING      2
+       3        PUTINPLACE         17      RUNNING      3
+       4        PUTINPLACE         17      RUNNING      4
+       5        PUTINPLACE         19      RUNNING      5
+       6        PUTINPLACE         17      RUNNING      6
+       7        PUTINPLACE         16      RUNNING      7
+       8        PUTINPLACE         17      RUNNING      8
+       9        PUTINPLACE         19      RUNNING      9
+      10        PUTINPLACE         19      RUNNING     10
+
+*step process 2
+
+
+*status
+   PROCESS #   FUNCTION       LINE NUMBER  STATUS   PROCESSOR
+       0        MAIN               33      BLOCKED      0
+       1        PUTINPLACE         20      RUNNING      1
+       2        PUTINPLACE         15      RUNNING      2
+       3        PUTINPLACE         17      RUNNING      3
+       4        PUTINPLACE         17      RUNNING      4
+       5        PUTINPLACE         19      RUNNING      5
+       6        PUTINPLACE         17      RUNNING      6
+       7        PUTINPLACE         16      RUNNING      7
+       8        PUTINPLACE         17      RUNNING      8
+       9        PUTINPLACE         19      RUNNING      9
+      10        PUTINPLACE         19      RUNNING     10
+
+*view 8:21
+   8 void PutinPlace( int src ) {
+   9   int testval, j, rank;
+  10 
+  11   testval = values[src];
+  12   j = src;   /* j moves through the whole array */
+  13   rank = 1;  /* position of the first number in the arrays */
+  14   do {
+  15     j = j % n + 1; /* j moves to the next circular position */
+  16     if (testval > values[j] ||
+  17        (testval == values[j] && src > j)) 
+  18        rank = rank + 1;
+  19   } while (j != src);
+  20   final[rank] = testval;  /*put into position*/
+  21 }
+
+*write 0 final
+
+
+Index Range: 10
+   10--> 0
+
+*^[[A    
+INVALID COMMAND
+
+*write 0 final
+
+
+Index Range: 0 
+    0--> 0
+
+*10
+INVALID COMMAND
+
+*display
+Breakpoints at Following Lines:
+20
+File for Program Data Input: InputsForRankSortParallel.txt
+File for Program Data Output: RankSortParallelOutput.txt
+Listing File for your Source Program: LISTFILE.TXT
+
+*trace 0 final[9]
+
+
+
+
+*display
+Breakpoints at Following Lines:
+20
+
+List of Trace Variables:
+Variable Name             Memory Location
+   final[9]                     28
+File for Program Data Input: InputsForRankSortParallel.txt
+File for Program Data Output: RankSortParallelOutput.txt
+Listing File for your Source Program: LISTFILE.TXT
+
+*write 0 final
+
+
+Index Range: 
+    0--> 0
+    1--> 0
+    2--> 0
+    3--> 0
+    4--> 0
+    5--> 0
+    6--> 0
+    7--> 0
+    8--> 0
+    9--> 0
+   10--> 0
+
+*close
+
+You can now modify your Program Source File
+
+
+*open RankSortParallel.c
+
+
+Program Successfully Compiled
+
+To View a Complete Program Listing, See File LISTFILE.TXT
+
+*break 20
+
+
+*display
+Breakpoints at Following Lines:
+20
+File for Program Data Input: InputsForRankSortParallel.txt
+File for Program Data Output: RankSortParallelOutput.txt
+Listing File for your Source Program: LISTFILE.TXT
+
+*reset
+All Debugger Settings are now reset to Default values
+
+*display
+Listing File for your Source Program: LISTFILE.TXT
+
+*run
+12 11 10 9 8 7 6 5 4 3
+  12   11   10    9    8    7    6    5    4    3 
+
+   3    4    5    6    7    8    9   10   11   12 
+
+
+
+SEQUENTIAL EXECUTION TIME: 5550
+PARALLEL EXECUTION TIME: 1341
+SPEEDUP:    4.14
+NUMBER OF PROCESSORS USED: 11
+
+*
+*break 20
+
+
+*run 
+1 2 3 4 5 6 7 8 9 0 
+   1    2    3    4    5    6    7    8    9    0 
+
+
+Break At 20  In Function PUTINPLACE    
+Process Number  1
+
+
+
+*INVALID COMMAND
+
+*input = InputsForRankSortParallel.c
+Cannot Open This Input File
+
+
+*input = InputsForRankSortParallel.txt
+
+*open RankSortParallel.c
+You Must Close Current Source Program First
+
+
+*run
+  12   31    6   55   10  100   99   12   81   31 
+
+
+Break At 20  In Function PUTINPLACE    
+Process Number  1
+
+
+
+*status
+   PROCESS #   FUNCTION       LINE NUMBER  STATUS   PROCESSOR
+       0        MAIN               33      BLOCKED      0
+       1        PUTINPLACE         20      RUNNING      1
+       2        PUTINPLACE         15      RUNNING      2
+       3        PUTINPLACE         17      RUNNING      3
+       4        PUTINPLACE         17      RUNNING      4
+       5        PUTINPLACE         19      RUNNING      5
+       6        PUTINPLACE         17      RUNNING      6
+       7        PUTINPLACE         16      RUNNING      7
+       8        PUTINPLACE         17      RUNNING      8
+       9        PUTINPLACE         19      RUNNING      9
+      10        PUTINPLACE         19      RUNNING     10
+
+*shortcuts 
+
+The following Command Keywords may be abbreviated using only the first letter:
+
+   ALARM
+   BREAK
+   CONTINUE
+   DISPLAY
+   EXIT
+   HELP
+   OPEN
+   PROFILE
+   RUN
+   STEP
+   TRACE
+   UTILIZATION
+   VIEW
+   WRITE
+
+
+*d
+Breakpoints at Following Lines:
+20
+File for Program Data Input: InputsForRankSortParallel.txt
+Listing File for your Source Program: LISTFILE.TXT
+
+*p
+Process Range: 
+Process Range: 
+Process Range: 10
+Time Step:2
+Minimum Time Step is 10
+
+*help
+The following commands are available:
+
+*OPEN filename - Open and Compile your program source file
+*RUN - Initialize and run the program from the beginning
+*CLOSE - Close your program source file to allow editing
+*EXIT - Terminate the C* system
+
+*LIST = filename - Change the source program listing file to "filename"
+*INPUT = filename - Use "filename" for source program input
+*OUTPUT = filename - Use "filename" for source program output
+*VIEW n:m - List program source lines n through m
+
+*BREAK n - Set a breakpoint at program line n
+*CLEAR BREAK n - Clear the breakpoint from line n
+*CONTINUE - Continue program execution after a breakpoint
+*STATUS p:q - Display status of processes p through q
+*STEP n - Continue execution for n lines in current STEP process
+*STEP PROCESS p - Set current STEP process number to p
+*WRITE p name - Write out value of variable "name" in process p
+*TRACE p name - Make variable "name" a trace variable
+*CLEAR TRACE m - Clear the trace from memory location m
+*DISPLAY - Display list of breakpoints, trace variables, and alarm
+
+*TIME - Show elapsed time since start of program and since last break
+*UTILIZATION p:q - Give utilization percentage for processors p to q
+*PROFILE p:q t - Set utilization profile to be generated for
+                    processes p to q every t time units
+*PROFILE OFF - Turn off profile
+*ALARM t - Set alarm to go off at time t
+*ALARM OFF - Disable alarm from going off in future
+
+*VARIATION ON (OFF) - Turn variation option on (off)
+*CONGESTION ON (OFF) - Turn congestion option on (off)
+*DELAY d - Set the basic communication delay to d time units
+*RESET - Reset all debugger settings to original default values
+*MPI ON (OFF) - Turn Message-Passing Interface mode on (off)
+*VERSION - Display information about this version of C*
+*SHORTCUTS - Show a list of shortcuts for frequently used commands
+*HELP - Show a complete list of commands
+
+*
