@@ -5,8 +5,8 @@
 #define tolerance 0.003
 
 float A[n+2][n+2], B[n+2][n+2];
-int stream higher[n+1], stream lower[n+1];
 spinlock Arrival, Departure;
+int stream higher[n+1], stream lower[n+1];
 int i, j;
 boolean globaldone;
 int count;
@@ -18,16 +18,17 @@ void LocalBarrier(int i) {
     if (i < n) {
         send(lower[i+1],1); /*send to Process i+1*/
         recv(higher[i],dummy); /*receive from Process i-1*/
+    }   
+    if (i > 1){
+        recv(lower[i],dummy);  /*receive from Process i+1*/
     }
-    if (i > 1)
-        recv(lower[i],dummy); /*receive from Process i+1*/
 }
 
 boolean Aggregate(boolean mydone) {
     boolean result;
     /*Arrival Phase - Count the processes arriving*/
     Lock(Arrival);
-    count = count + 1;
+    count++;
     globaldone = globaldone && mydone; /*aggregation*/
     if (count < n) {
         Unlock(Arrival); /*continue Arrival Phase*/
@@ -37,7 +38,7 @@ boolean Aggregate(boolean mydone) {
     }
     /*Departure Phase - Count the processes leaving*/
     Lock(Departure);
-    count = count - 1;
+    count--;
     result = globaldone; /*return “done” flag*/
     if (count > 0) {
         Unlock(Departure); /*continue Departure Phase*/
@@ -59,6 +60,10 @@ main( ){
             A[i][j] = (rand() % 200) / 200.0;
         }
     }
+    count = 0;
+    Unlock(Arrival);
+    Lock(Departure);
+    globaldone = true;
     B = A;
     forall i = 1 to n do {
         int j;
@@ -68,6 +73,9 @@ main( ){
             maxchange = 0;
             for(j = 1; j <= n; j++) {
                 B[i][j] = (A[i-1][j] + A[i+1][j] + A[i][j-1] + A[i][j+1]) / 4;
+                LocalBarrier(i);
+                A[i] = B[i];
+                LocalBarrier(i);
                 change = fabs(B[i][j] - A[i][j]);
                 if(change > maxchange) {
                     maxchange = change;
@@ -79,19 +87,4 @@ main( ){
         }
         while (!done);
     }
-
-    cout << "Ruthwik Preetham"<< endl ;
-
-    for(i = 0; i <= n + 1; i++){
-            cout << "Row:  " << i << "   Result" <<endl;
-            for(j = 0; j <= n+1; j++){
-            if((j > 0) && (j % 10) == 0){
-                cout << endl;
-            }
-            cout << A[i][j] << "  ";
-            }
-        cout << endl;
-    }
-
-    
 }

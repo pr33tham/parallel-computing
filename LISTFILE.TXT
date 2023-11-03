@@ -5,8 +5,8 @@
     5 #define tolerance 0.003
     6 
     7 float A[n+2][n+2], B[n+2][n+2];
-    8 int stream higher[n+1], stream lower[n+1];
-    9 spinlock Arrival, Departure;
+    8 spinlock Arrival, Departure;
+    9 int stream higher[n+1], stream lower[n+1];
    10 int i, j;
    11 boolean globaldone;
    12 int count;
@@ -18,65 +18,73 @@
    18     if (i < n) {
    19         send(lower[i+1],1); /*send to Process i+1*/
    20         recv(higher[i],dummy); /*receive from Process i-1*/
-   21     }
-   22     if (i > 1)
-   23         recv(lower[i],dummy); /*receive from Process i+1*/
-   24 }
-   25 
-   26 boolean Aggregate(boolean mydone) {
-   27     boolean result;
-   28     /*Arrival Phase - Count the processes arriving*/
-   29     Lock(Arrival);
-   30     count = count + 1;
-   31     globaldone = globaldone && mydone; /*aggregation*/
-   32     if (count < n) {
-   33         Unlock(Arrival); /*continue Arrival Phase*/
-   34     }
-   35     else {
-   36         Unlock(Departure); /*end Arrival Phase*/
-   37     }
-   38     /*Departure Phase - Count the processes leaving*/
-   39     Lock(Departure);
-   40     count = count - 1;
-   41     result = globaldone; /*return “done” flag*/
-   42     if (count > 0) {
-   43         Unlock(Departure); /*continue Departure Phase*/
-   44     }
-   45     else {
-   46         Unlock(Arrival); /*terminate Departure Phase*/
-   47         globaldone = true; /*reset for new Aggregation*/
-   48     }
-   49     return(result);
-   50 }
-   51 
+   21     }   
+   22     if (i > 1){
+   23         recv(lower[i],dummy);  /*receive from Process i+1*/
+   24     }
+   25 }
+   26 
+   27 boolean Aggregate(boolean mydone) {
+   28     boolean result;
+   29     /*Arrival Phase - Count the processes arriving*/
+   30     Lock(Arrival);
+   31     count++;
+   32     globaldone = globaldone && mydone; /*aggregation*/
+   33     if (count < n) {
+   34         Unlock(Arrival); /*continue Arrival Phase*/
+   35     }
+   36     else {
+   37         Unlock(Departure); /*end Arrival Phase*/
+   38     }
+   39     /*Departure Phase - Count the processes leaving*/
+   40     Lock(Departure);
+   41     count--;
+   42     result = globaldone; /*return “done” flag*/
+   43     if (count > 0) {
+   44         Unlock(Departure); /*continue Departure Phase*/
+   45     }
+   46     else {
+   47         Unlock(Arrival); /*terminate Departure Phase*/
+   48         globaldone = true; /*reset for new Aggregation*/
+   49     }
+   50     return(result);
+   51 }
    52 
-   53 main( ){
-   54     /*Read in initial values for array A*/
-   55     for(i = 1; i <= n;i++){
-   56         for(j = 1; j <= n; j++ ){
-   57             A[i][j] = (rand() % 200) / 200.0;
-   58         }
-   59     }
-   60     B = A;
-   61     forall i = 1 to n do {
-   62         int j;
-   63         float change, maxchange;
-   64         boolean done;
-   65         do {
-   66             maxchange = 0;
-   67             for(j = 1; j <= n; j++) {
-   68                 B[i][j] = (A[i-1][j] + A[i+1][j] + A[i][j-1] + A[i][j+1]) / 4;
-   69                 change = fabs(B[i][j] - A[i][j]);
-   70                 if(change > maxchange) {
-   71                     maxchange = change;
-   72                 }
-   73             }
-   74             LocalBarrier(i);
-   75             A[i] = B[i];
-   76             done = Aggregate(maxchange < tolerance);
-   77         }
-   78         while (!done);
-   79     }
-   80 
-   81     
-   82 }
+   53 
+   54 main( ){
+   55 
+   56     cout.precision(3);
+   57     /*Read in initial values for array A*/
+   58     for(i = 1; i <= n;i++){
+   59         for(j = 1; j <= n; j++ ){
+   60             A[i][j] = (rand() % 200) / 200.0;
+   61         }
+   62     }
+   63     count = 0;
+   64     Unlock(Arrival);
+   65     Lock(Departure);
+   66     globaldone = true;
+   67     B = A;
+   68     forall i = 1 to n do {
+   69         int j;
+   70         float change, maxchange;
+   71         boolean done;
+   72         do {
+   73             maxchange = 0;
+   74             for(j = 1; j <= n; j++) {
+   75                 B[i][j] = (A[i-1][j] + A[i+1][j] + A[i][j-1] + A[i][j+1]) / 4;
+   76                 LocalBarrier(i);
+   77                 A[i] = B[i];
+   78                 LocalBarrier(i);
+   79                 change = fabs(B[i][j] - A[i][j]);
+   80                 if(change > maxchange) {
+   81                     maxchange = change;
+   82                 }
+   83             }
+   84             LocalBarrier(i);
+   85             A[i] = B[i];
+   86             done = Aggregate(maxchange < tolerance);
+   87         }
+   88         while (!done);
+   89     }
+   90 }
