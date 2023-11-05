@@ -73,13 +73,13 @@ main( ){
             maxchange = 0;
             for(j = 1; j <= n; j++) {
                 B[i][j] = (A[i-1][j] + A[i+1][j] + A[i][j-1] + A[i][j+1]) / 4;
-                LocalBarrier(i);
-                A[i] = B[i];
-                LocalBarrier(i);
                 change = fabs(B[i][j] - A[i][j]);
                 if(change > maxchange) {
                     maxchange = change;
                 }
+                LocalBarrier(i);
+                A[i] = B[i];
+                LocalBarrier(i);
             }
             LocalBarrier(i);
             A[i] = B[i];
