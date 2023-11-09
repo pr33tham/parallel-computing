@@ -1,0 +1,4 @@
+chmod +x cstar
+
+xattr -d com.apple.quarantine cstar
+xattr -d com.apple.provenance cstar
