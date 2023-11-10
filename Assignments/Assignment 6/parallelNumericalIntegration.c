@@ -1,47 +1,48 @@
-ARCHITECTURE MESH2(25);
+/* PROGRAM NumericalIntegration */
 #include <stdlib.h>
 #include <math.h>
 
-#define n 150 /*Processes*/
-#define pointsOnMesh 70
+#define numproc 40 /*number of processes*/
+#define numpoints 30 /*number of points per process*/
 
-float process_list[number_of_processes];
-float stream global_sum_value[number_of_processes];
+float process[numproc];
+float stream globalSumValue[numproc];
+float globalsum;
+int i;
 
-float start, end, h, my_sum, final_output;
-int p, num, r;
+spinlock L;
 
-float f(float l) {
-    return sqrt(4 - l^2);
+float f(float t) { /*Function to be integrated*/
+    /*Compute value of f(t)*/
+    return sqrt(4 - t * t);
+
 }
 
-void integrationFunction(int myIndex, float start, float end, float h) {
-    float l, sum = 0;
-    int i;
-    l = start + myIndex * (end - start) / n;
-
-    for( i = 0; i < pointsOnMesh; i++) {
-        sum = sum + f(l);
-        l = l + h;
-    }
-    sum = h * sum;
-    send(global_sum_value[myIndex], sum);
-}
-
-main() {
+main( ) {
+    cout.precision(10);
+    float start, end, w, answer;
+    /*Initialize values of end points “a” and “b”*/
     start = 0;
     end = 2;
-    int i;
-    h  = (end - start) / (n * pointsOnMesh);
-    forall i = 0 to n -1 do {
-        int index;
+    w = (end-start)/(numproc*numpoints); /*spacing of points*/
+    forall i = 0 to numproc-1 do {
+        /*Create processes*/
         float sum = 0;
-        float l = start + i * (end - start) / n;
-        for(index = 0; index < pointsOnMesh; index++) {
-            sum = sum + f(l);
-            l = l + h;
+        float t;
+        int j;
+        t = start + i * (end - start) / numproc;
+        for(j = 0; j < numpoints; j++) {
+            sum = sum + f(t);
+            t = t + w;
         }
-        sum = h * sum;
-        send(global_sum_value[])
+        sum = w * sum;
+        Lock(L);
+        globalsum = globalsum + sum;
+        Unlock(L);
     }
+    for(i = 0; i < numproc; i++) {
+        globalsum = globalsum + process[i];
+    }
+    answer = globalsum + w/2 *(f(end)-f(start)); /*end points*/
+	cout << "Integral of f(x) from a to b :" << answer;
 }
