@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define numproc 40 /*number of processes*/
-#define numpoints 30 /*number of points per process*/
+#define numproc 120 /*number of processes*/
+#define numpoints 60 /*number of points per process*/
 
 float process[numproc];
 float stream globalSumValue[numproc];
@@ -15,7 +15,6 @@ spinlock L;
 float f(float t) { /*Function to be integrated*/
     /*Compute value of f(t)*/
     return sqrt(4 - t * t);
-
 }
 
 main( ) {

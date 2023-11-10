@@ -1,90 +1,47 @@
-    1 #include <stdlib.h>
-    2 #include <math.h>
-    3 
-    4 #define n 32
-    5 #define tolerance 0.003
-    6 
-    7 float A[n+2][n+2], B[n+2][n+2];
-    8 spinlock Arrival, Departure;
-    9 int stream higher[n+1], stream lower[n+1];
-   10 int i, j;
-   11 boolean globaldone;
-   12 int count;
-   13 /*6.11*/
-   14 void LocalBarrier(int i) {
-   15     int dummy;
-   16     if (i > 1)
-   17         send(higher[i-1],1); /*send to Process i-1*/
-   18     if (i < n) {
-   19         send(lower[i+1],1); /*send to Process i+1*/
-   20         recv(higher[i],dummy); /*receive from Process i-1*/
-   21     }   
-   22     if (i > 1){
-   23         recv(lower[i],dummy);  /*receive from Process i+1*/
-   24     }
-   25 }
-   26 
-   27 boolean Aggregate(boolean mydone) {
-   28     boolean result;
-   29     /*Arrival Phase - Count the processes arriving*/
-   30     Lock(Arrival);
-   31     count++;
-   32     globaldone = globaldone && mydone; /*aggregation*/
-   33     if (count < n) {
-   34         Unlock(Arrival); /*continue Arrival Phase*/
-   35     }
-   36     else {
-   37         Unlock(Departure); /*end Arrival Phase*/
-   38     }
-   39     /*Departure Phase - Count the processes leaving*/
-   40     Lock(Departure);
-   41     count--;
-   42     result = globaldone; /*return “done” flag*/
-   43     if (count > 0) {
-   44         Unlock(Departure); /*continue Departure Phase*/
-   45     }
-   46     else {
-   47         Unlock(Arrival); /*terminate Departure Phase*/
-   48         globaldone = true; /*reset for new Aggregation*/
-   49     }
-   50     return(result);
-   51 }
-   52 
-   53 
-   54 main( ){
-   55 
-   56     cout.precision(3);
-   57     /*Read in initial values for array A*/
-   58     for(i = 1; i <= n;i++){
-   59         for(j = 1; j <= n; j++ ){
-   60             A[i][j] = (rand() % 200) / 200.0;
-   61         }
-   62     }
-   63     count = 0;
-   64     Unlock(Arrival);
-   65     Lock(Departure);
-   66     globaldone = true;
-   67     B = A;
-   68     forall i = 1 to n do {
-   69         int j;
-   70         float change, maxchange;
-   71         boolean done;
-   72         do {
-   73             maxchange = 0;
-   74             for(j = 1; j <= n; j++) {
-   75                 B[i][j] = (A[i-1][j] + A[i+1][j] + A[i][j-1] + A[i][j+1]) / 4;
-   76                 change = fabs(B[i][j] - A[i][j]);
-   77                 if(change > maxchange) {
-   78                     maxchange = change;
-   79                 }
-   80                 LocalBarrier(i);
-   81                 A[i] = B[i];
-   82                 LocalBarrier(i);
-   83             }
-   84             LocalBarrier(i);
-   85             A[i] = B[i];
-   86             done = Aggregate(maxchange < tolerance);
-   87         }
-   88         while (!done);
-   89     }
-   90 }
+    1 /* PROGRAM NumericalIntegration */
+    2 #include <stdlib.h>
+    3 #include <math.h>
+    4 
+    5 #define numproc 120 /*number of processes*/
+    6 #define numpoints 60 /*number of points per process*/
+    7 
+    8 float process[numproc];
+    9 float stream globalSumValue[numproc];
+   10 float globalsum;
+   11 int i;
+   12 
+   13 spinlock L;
+   14 
+   15 float f(float t) { /*Function to be integrated*/
+   16     /*Compute value of f(t)*/
+   17     return sqrt(4 - t * t);
+   18 }
+   19 
+   20 main( ) {
+   21     cout.precision(10);
+   22     float start, end, w, answer;
+   23     /*Initialize values of end points “a” and “b”*/
+   24     start = 0;
+   25     end = 2;
+   26     w = (end-start)/(numproc*numpoints); /*spacing of points*/
+   27     forall i = 0 to numproc-1 do {
+   28         /*Create processes*/
+   29         float sum = 0;
+   30         float t;
+   31         int j;
+   32         t = start + i * (end - start) / numproc;
+   33         for(j = 0; j < numpoints; j++) {
+   34             sum = sum + f(t);
+   35             t = t + w;
+   36         }
+   37         sum = w * sum;
+   38         Lock(L);
+   39         globalsum = globalsum + sum;
+   40         Unlock(L);
+   41     }
+   42     for(i = 0; i < numproc; i++) {
+   43         globalsum = globalsum + process[i];
+   44     }
+   45     answer = globalsum + w/2 *(f(end)-f(start)); /*end points*/
+   46 	cout << "Integral of f(x) from a to b :" << answer;
+   47 }
