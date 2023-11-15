@@ -1,47 +1,66 @@
-    1 /* PROGRAM NumericalIntegration */
+    1 ARCHITECTURE TORUS(7); 
     2 #include <stdlib.h>
-    3 #include <math.h>
-    4 
-    5 #define numproc 120 /*number of processes*/
-    6 #define numpoints 60 /*number of points per process*/
-    7 
-    8 float process[numproc];
-    9 float stream globalSumValue[numproc];
-   10 float globalsum;
-   11 int i;
-   12 
-   13 spinlock L;
-   14 
-   15 float f(float t) { /*Function to be integrated*/
-   16     /*Compute value of f(t)*/
-   17     return sqrt(4 - t * t);
-   18 }
-   19 
-   20 main( ) {
-   21     cout.precision(10);
-   22     float start, end, w, answer;
-   23     /*Initialize values of end points “a” and “b”*/
-   24     start = 0;
-   25     end = 2;
-   26     w = (end-start)/(numproc*numpoints); /*spacing of points*/
-   27     forall i = 0 to numproc-1 do {
-   28         /*Create processes*/
-   29         float sum = 0;
-   30         float t;
-   31         int j;
-   32         t = start + i * (end - start) / numproc;
-   33         for(j = 0; j < numpoints; j++) {
-   34             sum = sum + f(t);
-   35             t = t + w;
-   36         }
-   37         sum = w * sum;
-   38         Lock(L);
-   39         globalsum = globalsum + sum;
-   40         Unlock(L);
-   41     }
-   42     for(i = 0; i < numproc; i++) {
-   43         globalsum = globalsum + process[i];
-   44     }
-   45     answer = globalsum + w/2 *(f(end)-f(start)); /*end points*/
-   46 	cout << "Integral of f(x) from a to b :" << answer;
-   47 }
+    3 #define m 7
+    4 #define p 2 /*Size of partitions R_Preetham*/
+    5 typedef float partition[p+1][p+1];
+    6 partition A[m][m], B[m][m], C[m][m]; /*Master arrays and result array R_Preetham*/
+    7 partition stream Achan[m][m], stream Bchan[m][m]; /*Streams to communicate between processes R_Preetham*/
+    8 int i,j; /*Index integers for looping R_Preetham*/
+    9 
+   10 void Multiply(int row, int col, value partition myA, value partition myB, partition mainC)
+   11 {
+   12   int i,j,k,iter,above,left; 
+   13   partition myC = {0}; /*Initialize array with zeroes R_Preetham*/
+   14   if (row > 0) above = row-1;
+   15     else above = m-1;
+   16   if (col > 0) left = col-1;
+   17     else left = m-1; 
+   18   for (iter = 1; iter <= m; iter++) {
+   19     send(Achan[row][left], myA); /*Send myA to the left row R_Preetham*/
+   20 	  send(Bchan[above][col], myB); /*Send myB to upper column R_Preetham*/
+   21 
+   22 	  for (i = 1; i <= p; i++)
+   23 	   for (j = 1; j <= p; j++)
+   24 		  for (k = 1; k <= p; k++)
+   25 		    myC[i][j] = myC[i][j] + myA[i][k] * myB[k][j]; /*Matrix multiplicaiton R_Preetham*/
+   26 	  recv(Achan[row][col], myA); /*Recieve myA* R_Preetham*/
+   27 	  recv(Bchan[row][col], myB); /*Recieve myB* R_Preetham*/
+   28   }
+   29   mainC = myC; /*Copy to the global result array C R_Preetham*/
+   30 }
+   31 
+   32 main( ) {
+   33 
+   34   int k, l;
+   35   /*Initialise Array A and B with random values R_Preetham*/
+   36   for (i = 0; i < m; i++)
+   37 	 for (j = 0; j < m; j++)
+   38 	  for (k = 1; k <= p; k++)
+   39 	    for (l = 1; l <= p; l++) {
+   40 		    A[i][j][k][l] = (rand() % 100)/10.0;
+   41 		    B[i][j][k][l] = (rand() % 100)/10.0;
+   42 	     }
+   43 
+   44 
+   45   for (i = 0; i < m; i++)
+   46 	 for (j = 0; j < m; j++)
+   47 	  fork (@i * m + j) /*Using fork to create prcesses as outer and inner forall is not efficient R_Preetham*/
+   48       Multiply(i, j, A[i][(j+i)%m], B[(i+j)%m][j], C[i][j]); /*Calling Multiply function to perform matrix multiplication R_Preetham*/
+   49 
+   50   for (i = 0; i < m; i++)
+   51 	 for (j = 0; j < m; j++)
+   52 	  join;
+   53 
+   54   /*Display the computed array C to console R_Preetham*/
+   55   cout.precision(4);
+   56   for (i = 0; i < m; i++) {
+   57 	 for (j = 0; j < m; j++) {
+   58 	  cout << "partition[" << i << ", " << j << "]" << endl;
+   59 	  for (k = 1; k <= p; k++) {
+   60 		 for (l = 1; l <= p; l++)
+   61 		  cout << C[i][j][k][l] << ", ";
+   62 	    cout << endl;
+   63 	  }
+   64 	 }
+   65   }
+   66 }
