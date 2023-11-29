@@ -27,10 +27,10 @@ void input_image() { /*input and partition the image*/
 }
 main() {
     MPI_Init();
-    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-    MPI_Comm_size(MPI_COMM_WORLD, &totalproc);
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank); /*Rank to know process number*/
+    MPI_Comm_size(MPI_COMM_WORLD, &totalproc); /* Total number of processes in architechure*/
     blocksize = (m+2)*(n+2);
-    if (myrank == 0) {
+    if (myrank == 0) { /*If process is main, input image*/
         input_image();
     }
     /* receive my block of image*/
@@ -55,7 +55,7 @@ main() {
     MPI_Send(&outrows[0][0], blocksize, MPI_INT, dest,
     tag, MPI_COMM_WORLD);
     /*assemble partitions into filtered image as output*/
-    if (myrank == 0) {
+    if (myrank == 0) { /*If main process, write the image grey scale to file*/
         for (k = 0; k < totalproc; k++) {
             source = k; tag = 2;
             MPI_Recv(&outrows[0][0], blocksize, MPI_INT,
