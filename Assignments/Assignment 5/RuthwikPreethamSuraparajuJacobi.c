@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define n 32
-#define tolerance 0.003
+#define n 36
+#define tolerance 0.002
 
 float A[n+2][n+2], B[n+2][n+2];
 spinlock Arrival, Departure;
@@ -87,4 +87,16 @@ main( ){
         }
         while (!done);
     }
+    for(i = 0; i <= n + 1; i++){
+            cout << "Row:  " << i << "   Result" <<endl;
+            for(j = 0; j <= n; j++){
+            if((j > 0) && (j % 10) == 0){
+                cout << endl;
+            }
+            cout << A[i][j] << "  ";
+            }
+        cout << endl;
+    }
+    cout << endl;
+    cout << "Suraparaju Ruthwik Preetham"<< endl ;
 }

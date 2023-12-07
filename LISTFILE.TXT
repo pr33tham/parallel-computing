@@ -1,75 +1,101 @@
-    1 ARCHITECTURE HYPERCUBE(7); /*128 processors*/
-    2 #include <stdlib.h>
-    3 #include <mpi.h>
-    4 
-    5 #define n 640 /* dimension of image */
-    6 #define m 5 /* number of rows in each partition */
-    7 
-    8 int inrows[m+2][n+2], outrows[m][n];
-    9 int filter[3][3] = {1,1,1,1,1,1,1,1,1};
-   10 MPI_Status status;
-   11 int myrank, totalproc, blocksize, dest, tag, source;
-   12 int i, j, k;
-   13 
-   14 void input_image() { /*input and partition the image*/
-   15     int image[n+2][n+2];
-   16     /* input pixel values for image */
-   17     for (i = 0; i <= n+1; i++) {
-   18         for (j = 0; j <= n+1; j++)
-   19             image[i][j] = rand() % 254;
-   20     }
-   21     /* send partition to each process */
-   22     for (k = 0; k < totalproc; k++) {
-   23         dest = k; tag = 1;
-   24         MPI_Send(&image[k*m][0], blocksize, MPI_INT, 
-   25                 dest, tag, MPI_COMM_WORLD);
-   26     }
-   27 }
-   28 main() {
-   29     MPI_Init();
-   30     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-   31     MPI_Comm_size(MPI_COMM_WORLD, &totalproc);
-   32     blocksize = (m+2)*(n+2);
-   33     if (myrank == 0) {
-   34         input_image();
+    1 #include <stdlib.h>
+    2 #include <math.h>
+    3 
+    4 #define n 36
+    5 #define tolerance 0.002
+    6 
+    7 float A[n+2][n+2], B[n+2][n+2];
+    8 spinlock Arrival, Departure;
+    9 int stream higher[n+1], stream lower[n+1];
+   10 int i, j;
+   11 boolean globaldone;
+   12 int count;
+   13 /*6.11*/
+   14 void LocalBarrier(int i) {
+   15     int dummy;
+   16     if (i > 1)
+   17         send(higher[i-1],1); /*send to Process i-1*/
+   18     if (i < n) {
+   19         send(lower[i+1],1); /*send to Process i+1*/
+   20         recv(higher[i],dummy); /*receive from Process i-1*/
+   21     }   
+   22     if (i > 1){
+   23         recv(lower[i],dummy);  /*receive from Process i+1*/
+   24     }
+   25 }
+   26 
+   27 boolean Aggregate(boolean mydone) {
+   28     boolean result;
+   29     /*Arrival Phase - Count the processes arriving*/
+   30     Lock(Arrival);
+   31     count++;
+   32     globaldone = globaldone && mydone; /*aggregation*/
+   33     if (count < n) {
+   34         Unlock(Arrival); /*continue Arrival Phase*/
    35     }
-   36     /* receive my block of image*/
-   37     source = 0; tag = 1;
-   38     MPI_Recv(&inrows[0][0], blocksize, MPI_INT, source,
-   39     tag, MPI_COMM_WORLD, &status);
-   40     /* apply filter mask to my partition*/
-   41     for (i = 1; i <= m; i++)
-   42         for (j = 1; j <= n; j++)
-   43             outrows[i-1,j-1] = (int) ((filter[0,0]*inrows[i-1,j-1]
-   44                                 + filter[0,1]*inrows[i-1,j]
-   45                                 + filter[0,2]*inrows[i-1,j+1]
-   46                                 + filter[1,0]*inrows[i,j-1]
-   47                                 + filter[1,1]*inrows[i,j]
-   48                                 + filter[1,2]*inrows[i,j+1]
-   49                                 + filter[2,0]*inrows[i+1,j-1]
-   50                                 + filter[2,1]*inrows[i+1,j]
-   51                                 + filter[2,2]*inrows[i+1,j+1]) / 9);
-   52     /* send filtered partition back to process 0 */
-   53     blocksize = m*n;
-   54     dest = 0; tag = 2;
-   55     MPI_Send(&outrows[0][0], blocksize, MPI_INT, dest,
-   56     tag, MPI_COMM_WORLD);
-   57     /*assemble partitions into filtered image as output*/
-   58     if (myrank == 0) {
-   59         for (k = 0; k < totalproc; k++) {
-   60             source = k; tag = 2;
-   61             MPI_Recv(&outrows[0][0], blocksize, MPI_INT,
-   62                             source, tag, MPI_COMM_WORLD, &status);
-   63             for (i = 0; i < m; i++) {
-   64                 for (j = 0; j < n; j++){
-   65                     cout << outrows[i][j];
-   66                     if ((j % 20) == 9) {
-   67                         cout << endl;
-   68                     }
-   69                 }
-   70                     cout << endl;
-   71             }
-   72         }
-   73     }
-   74     MPI_Finalize();
-   75 }
+   36     else {
+   37         Unlock(Departure); /*end Arrival Phase*/
+   38     }
+   39     /*Departure Phase - Count the processes leaving*/
+   40     Lock(Departure);
+   41     count--;
+   42     result = globaldone; /*return “done” flag*/
+   43     if (count > 0) {
+   44         Unlock(Departure); /*continue Departure Phase*/
+   45     }
+   46     else {
+   47         Unlock(Arrival); /*terminate Departure Phase*/
+   48         globaldone = true; /*reset for new Aggregation*/
+   49     }
+   50     return(result);
+   51 }
+   52 
+   53 
+   54 main( ){
+   55 
+   56     cout.precision(3);
+   57     /*Read in initial values for array A*/
+   58     for(i = 1; i <= n;i++){
+   59         for(j = 1; j <= n; j++ ){
+   60             A[i][j] = (rand() % 200) / 200.0;
+   61         }
+   62     }
+   63     count = 0;
+   64     Unlock(Arrival);
+   65     Lock(Departure);
+   66     globaldone = true;
+   67     B = A;
+   68     forall i = 1 to n do {
+   69         int j;
+   70         float change, maxchange;
+   71         boolean done;
+   72         do {
+   73             maxchange = 0;
+   74             for(j = 1; j <= n; j++) {
+   75                 B[i][j] = (A[i-1][j] + A[i+1][j] + A[i][j-1] + A[i][j+1]) / 4;
+   76                 change = fabs(B[i][j] - A[i][j]);
+   77                 if(change > maxchange) {
+   78                     maxchange = change;
+   79                 }
+   80                 LocalBarrier(i);
+   81                 A[i] = B[i];
+   82                 LocalBarrier(i);
+   83             }
+   84             LocalBarrier(i);
+   85             A[i] = B[i];
+   86             done = Aggregate(maxchange < tolerance);
+   87         }
+   88         while (!done);
+   89     }
+   90     for(i = 0; i <= n + 1; i++){
+   91             cout << "Row:  " << i << "   Result" <<endl;
+   92             for(j = 0; j <= n; j++){
+   93             if((j > 0) && (j % 10) == 0){
+   94                 cout << endl;
+   95             }
+   96             cout << A[i][j] << "  ";
+   97             }
+   98         cout << endl;
+   99     }
+  100     cout << "Sai Kumar Gangadasu"<< endl ;
+  101 }

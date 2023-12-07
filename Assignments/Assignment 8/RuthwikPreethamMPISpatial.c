@@ -2,7 +2,7 @@ ARCHITECTURE HYPERCUBE(7); /*128 processors*/
 #include <stdlib.h>
 #include <mpi.h>
 
-#define n 640 /* dimension of image */
+#define n 700 /* dimension of image */
 #define m 5 /* number of rows in each partition */
 
 int inrows[m+2][n+2], outrows[m][n];
